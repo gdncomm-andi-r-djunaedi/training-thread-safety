@@ -1,0 +1,52 @@
+package com.example.threadsafety.controller;
+
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
+/**
+ * THREAD-SAFE Controller (Solution 2: Singleton Scope - BEST PRACTICE)
+ *
+ * This controller is singleton-scoped (default) but achieves thread safety
+ * by NOT storing request-specific data in private fields.
+ *
+ * BEST PRACTICE: Use method parameters and local variables for request data.
+ * Private/instance fields should only be used for shared, immutable resources
+ * like dependencies.
+ *
+ * ADVANTAGE: Singleton scope is more efficient (one instance for all requests)
+ * while maintaining thread safety.
+ */
+@RestController
+@RequestMapping("/safe-singleton")
+public class SafeSingletonController {
+
+    // NO private fields for request-specific data!
+    // This controller is singleton, so we avoid storing request state here.
+    // Any shared dependencies should be injected and be thread-safe.
+
+    @GetMapping("/{id}")
+    public Map<String, Object> get(@PathVariable String id) {
+        // Use method parameter directly (thread-local, safe)
+        // No need to store in a private field
+
+        // Simulate some processing time
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Retrieve from method parameter (never changes during request)
+        String retrievedId = id;
+
+        return Map.of(
+            "id", retrievedId,
+            "scope", "singleton",
+            "pattern", "no-private-field",
+            "controller", "SafeSingletonController",
+            "timestamp", System.currentTimeMillis(),
+            "thread", Thread.currentThread().getName(),
+            "instanceHashCode", System.identityHashCode(this)
+        );
+    }
+}
