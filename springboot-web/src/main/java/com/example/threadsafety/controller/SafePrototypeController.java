@@ -24,14 +24,20 @@ public class SafePrototypeController {
     // each other's state.
     private String privateId;
 
-    @GetMapping("/{id}")
-    public Map<String, Object> get(@PathVariable String id) {
+    @GetMapping({"/{id}", "/{id}/{timeout}"})
+    public Map<String, Object> get(
+            @PathVariable String id,
+            @PathVariable(required = false) Long timeout
+    ) {
+        // Determine effective timeout (default: 100ms)
+        long effectiveTimeout = (timeout != null) ? timeout : 100L;
+
         // Step 1: Store the id in the private field
         this.privateId = id;
 
         // Step 2: Simulate some processing time
         try {
-            Thread.sleep(100);
+            Thread.sleep(effectiveTimeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -43,6 +49,7 @@ public class SafePrototypeController {
 
         return Map.of(
             "id", retrievedId,
+            "timeout", effectiveTimeout,
             "scope", "prototype",
             "pattern", "private-field",
             "controller", "SafePrototypeController",

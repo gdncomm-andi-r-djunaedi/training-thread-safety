@@ -21,15 +21,22 @@ public class UnsafeController {
     // share the same instance of this field.
     private String privateId;
 
-    @GetMapping("/{id}")
-    public Map<String, Object> get(@PathVariable String id) {
+    @GetMapping({"/{id}", "/{id}/{timeout}"})
+    public Map<String, Object> get(
+            @PathVariable String id,
+            @PathVariable(required = false) Long timeout
+    ) {
+        // Determine effective timeout (default: 100ms)
+        long effectiveTimeout = (timeout != null) ? timeout : 100L;
+
         // Step 1: Store the id in the private field
         this.privateId = id;
 
         // Step 2: Simulate some processing time (e.g., database query)
         // This delay makes the race condition more likely to occur
+        // Longer timeouts amplify the race condition for easier demonstration
         try {
-            Thread.sleep(100);
+            Thread.sleep(effectiveTimeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -41,6 +48,7 @@ public class UnsafeController {
 
         return Map.of(
             "id", retrievedId,
+            "timeout", effectiveTimeout,
             "scope", "singleton",
             "pattern", "private-field",
             "controller", "UnsafeController",

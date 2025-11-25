@@ -24,14 +24,20 @@ public class SafeSingletonController {
     // This controller is singleton, so we avoid storing request state here.
     // Any shared dependencies should be injected and be thread-safe.
 
-    @GetMapping("/{id}")
-    public Map<String, Object> get(@PathVariable String id) {
+    @GetMapping({"/{id}", "/{id}/{timeout}"})
+    public Map<String, Object> get(
+            @PathVariable String id,
+            @PathVariable(required = false) Long timeout
+    ) {
+        // Determine effective timeout (default: 100ms)
+        long effectiveTimeout = (timeout != null) ? timeout : 100L;
+
         // Use method parameter directly (thread-local, safe)
         // No need to store in a private field
 
         // Simulate some processing time
         try {
-            Thread.sleep(100);
+            Thread.sleep(effectiveTimeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -41,6 +47,7 @@ public class SafeSingletonController {
 
         return Map.of(
             "id", retrievedId,
+            "timeout", effectiveTimeout,
             "scope", "singleton",
             "pattern", "no-private-field",
             "controller", "SafeSingletonController",
