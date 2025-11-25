@@ -37,10 +37,10 @@ export default function () {
 
       let result = check(res, {
         [`${endpoint.path}/${id} returns correct id`]: (r) => {
-          let body = JSON.parse(r.body);
-          let isCorrect = body.id === id;
+          let body = r.body.trim();
+          let isCorrect = body === id;
           let status = isCorrect ? '✓' : '✗';
-          console.log(`  ${status} Request: ${endpoint.path}/${id}, Got: ${body.id}, Expected: ${id}`);
+          console.log(`  ${status} Request: ${endpoint.path}/${id}, Got: ${body}, Expected: ${id}`);
           return isCorrect;
         },
         [`${endpoint.path} status is 200`]: (r) => r.status === 200,

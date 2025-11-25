@@ -2,7 +2,6 @@ package com.example.threadsafety.controller;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * THREAD-SAFE Controller (Solution 1: Prototype Scope)
@@ -25,7 +24,7 @@ public class SafePrototypeController {
     private String privateId;
 
     @GetMapping({"/{id}", "/{id}/{timeout}"})
-    public Map<String, Object> get(
+    public String get(
             @PathVariable String id,
             @PathVariable(required = false) Long timeout
     ) {
@@ -47,15 +46,6 @@ public class SafePrototypeController {
         // can access or modify this.privateId. Each request has its own instance.
         String retrievedId = this.privateId;
 
-        return Map.of(
-            "id", retrievedId,
-            "timeout", effectiveTimeout,
-            "scope", "prototype",
-            "pattern", "private-field",
-            "controller", "SafePrototypeController",
-            "timestamp", System.currentTimeMillis(),
-            "thread", Thread.currentThread().getName(),
-            "instanceHashCode", System.identityHashCode(this)
-        );
+        return retrievedId + "\n";
     }
 }

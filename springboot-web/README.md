@@ -38,33 +38,34 @@ With concurrent requests:
 
 ### Live Demonstration
 
-To see the race condition in action, run these two concurrent curl commands:
+To see the race condition in action with two simple curl commands:
 
+**Terminal 1: Start a slow request (20 second timeout)**
 ```bash
-curl -s http://localhost:8080/unsafe/alice/3000 > result_alice.json & \
-curl -s http://localhost:8080/unsafe/bob/3000 > result_bob.json & \
-wait && cat result_alice.json && echo "" && cat result_bob.json
+curl http://localhost:8080/unsafe/jakarta/20000 &
+```
+
+**Terminal 1: Immediately send a fast request (1ms timeout)**
+```bash
+curl http://localhost:8080/unsafe/bandung/1
 ```
 
 **Expected Results:**
-- `result_alice.json` should contain `"id":"alice"`
-- `result_bob.json` should contain `"id":"bob"`
+- Fast request (`bandung/1`) returns immediately: `bandung`
+- Slow request (`jakarta/20000`) should return: `jakarta`
 
-**Actual Results (race condition):**
-```json
-{"id":"alice", "timeout":3000, ...}  // ✅ First request correct
-{"id":"alice", "timeout":3000, ...}  // ❌ Second request WRONG! Got "alice" instead of "bob"
+**Actual Results (race condition detected):**
 ```
-
-Both requests started nearly simultaneously with a 3-second delay, causing them to interfere with each other's private field. The second request (`bob`) returns the wrong ID because the first request (`alice`) overwrote the shared `privateId` field.
+bandung      ✅ Fast request correct
+jakarta      ✅ Expected "jakarta", but got "bandung" ❌ RACE CONDITION!
+```
 
 **Why it happens:**
 - Both requests use the **same singleton controller instance**
-- Request 1 sets `privateId = "alice"`, then sleeps for 3 seconds
-- Request 2 sets `privateId = "bob"` (overwrites!), then sleeps for 3 seconds
-- Request 1 wakes up and reads `privateId` → might get "bob"
-- Request 2 wakes up and reads `privateId` → gets "bob"
-- Result: One or both requests return the wrong value
+- Request 1 sets `privateId = "jakarta"`, then sleeps for 20 seconds
+- Request 2 sets `privateId = "bandung"`, then sleeps for 1ms (overwrites!)
+- Request 2 wakes up, reads `privateId` → gets "bandung" ✅ (correct, but by accident)
+- Request 1 wakes up after 20s, reads `privateId` → gets "bandung" ❌ (WRONG! Should be "jakarta")
 
 ## Solutions
 
@@ -121,19 +122,13 @@ public class SafeSingletonController {
 
 ### Response Format
 
-All endpoints return JSON with metadata:
+All endpoints return plain text (just the ID value):
 
-```json
-{
-  "id": "1",
-  "timeout": 100,
-  "scope": "singleton",
-  "pattern": "private-field",
-  "controller": "UnsafeController",
-  "timestamp": 1732454400000,
-  "thread": "http-nio-8080-exec-1"
-}
 ```
+jakarta
+```
+
+This simple response format makes it easy to test with curl and clearly see race conditions.
 
 ## Running the Demo
 

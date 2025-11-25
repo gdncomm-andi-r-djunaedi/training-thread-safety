@@ -1,7 +1,6 @@
 package com.example.threadsafety.controller;
 
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * THREAD-SAFE Controller (Solution 2: Singleton Scope - BEST PRACTICE)
@@ -25,7 +24,7 @@ public class SafeSingletonController {
     // Any shared dependencies should be injected and be thread-safe.
 
     @GetMapping({"/{id}", "/{id}/{timeout}"})
-    public Map<String, Object> get(
+    public String get(
             @PathVariable String id,
             @PathVariable(required = false) Long timeout
     ) {
@@ -45,15 +44,6 @@ public class SafeSingletonController {
         // Retrieve from method parameter (never changes during request)
         String retrievedId = id;
 
-        return Map.of(
-            "id", retrievedId,
-            "timeout", effectiveTimeout,
-            "scope", "singleton",
-            "pattern", "no-private-field",
-            "controller", "SafeSingletonController",
-            "timestamp", System.currentTimeMillis(),
-            "thread", Thread.currentThread().getName(),
-            "instanceHashCode", System.identityHashCode(this)
-        );
+        return retrievedId + "\n";
     }
 }

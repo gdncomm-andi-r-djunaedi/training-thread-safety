@@ -57,11 +57,11 @@ export function testUnsafe() {
 
   check(res, {
     'unsafe returns correct id': (r) => {
-      let body = JSON.parse(r.body);
-      let isCorrect = body.id === id;
+      let body = r.body.trim();
+      let isCorrect = body === id;
       if (!isCorrect) {
         // This is expected - log when we catch the race condition
-        // console.log(`RACE CONDITION DETECTED: VU ${__VU} expected ${id}, got ${body.id}`);
+        // console.log(`RACE CONDITION DETECTED: VU ${__VU} expected ${id}, got ${body}`);
       }
       return isCorrect;
     },
@@ -80,8 +80,8 @@ export function testSafePrototype() {
 
   check(res, {
     'safe-prototype returns correct id': (r) => {
-      let body = JSON.parse(r.body);
-      return body.id === id;
+      let body = r.body.trim();
+      return body === id;
     },
     'status is 200': (r) => r.status === 200,
   }, { endpoint: 'safe-prototype' });
@@ -98,8 +98,8 @@ export function testSafeSingleton() {
 
   check(res, {
     'safe-singleton returns correct id': (r) => {
-      let body = JSON.parse(r.body);
-      return body.id === id;
+      let body = r.body.trim();
+      return body === id;
     },
     'status is 200': (r) => r.status === 200,
   }, { endpoint: 'safe-singleton' });

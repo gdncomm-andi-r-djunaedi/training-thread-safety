@@ -1,7 +1,6 @@
 package com.example.threadsafety.controller;
 
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * THREAD-UNSAFE Controller
@@ -22,7 +21,7 @@ public class UnsafeController {
     private String privateId;
 
     @GetMapping({"/{id}", "/{id}/{timeout}"})
-    public Map<String, Object> get(
+    public String get(
             @PathVariable String id,
             @PathVariable(required = false) Long timeout
     ) {
@@ -46,14 +45,6 @@ public class UnsafeController {
         // this.privateId while we were sleeping, so we might return the wrong value!
         String retrievedId = this.privateId;
 
-        return Map.of(
-            "id", retrievedId,
-            "timeout", effectiveTimeout,
-            "scope", "singleton",
-            "pattern", "private-field",
-            "controller", "UnsafeController",
-            "timestamp", System.currentTimeMillis(),
-            "thread", Thread.currentThread().getName()
-        );
+        return retrievedId + "\n";
     }
 }
